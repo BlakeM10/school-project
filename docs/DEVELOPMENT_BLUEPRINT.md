@@ -179,57 +179,81 @@ court-vision/
 
 ## 5. Database Schema (Firebase Firestore — Native mode)
 
+> The authoritative, fully detailed database design is **`docs/DATABASE_SCHEMA.md`**
+> (Phase 3 deliverable), implemented in `firebase/firestore.rules`,
+> `firebase/firestore.indexes.json`, and `firebase/seed/drills.json`.
+> The summary below mirrors that design.
+
 Four collections, exactly as specified in D3:
 
 ### `users/{uid}` — document per Player or Coach (uid = Firebase Auth UID)
 ```
-role:        "player" | "coach"
+role:        "player" | "coach"   (immutable after creation)
 displayName: string
 email:       string
-teamId:      string (ref → teams)
+teamId:      string | null        (ref → teams; null until joined)
 createdAt:   timestamp
 ```
 
 ### `teams/{teamId}` — links coaches to their managed players
 ```
 name:      string
-coachIds:  array<string>   (user uids)
-playerIds: array<string>   (user uids)
+joinCode:  string               (6-char code; players enter it to join — approved account flow)
+coachIds:  array<string>        (user uids)
+playerIds: array<string>        (user uids)
+createdAt: timestamp
 ```
 
-### `drills/{drillId}` — predefined catalogue, read-only to clients
+### `drills/{drillId}` — predefined catalogue, read-only to clients, seeded server-side
 ```
 name:          string
-category:      string          (e.g. shooting, dribbling, reaction)
+category:      "shooting" | "dribbling" | "reaction" | "combined"
 instructions:  string
-targetMetrics: map             (e.g. { accuracyPct: 70, shots: 20 })
+targetMetrics: map              (e.g. { accuracyPct: 70, shots: 20 })
 durationSec:   number
+measures:      array<string>    (subset of shots|releaseTime|dribbles|reactionTime —
+                                 drives which CV detectors the Live Session activates)
+sortOrder:     number
 ```
 
-### `sessions/{sessionId}` — one document per completed drill session
+### `sessions/{sessionId}` — one immutable document per completed drill session
 ```
-playerId:        string (uid)
-teamId:          string        (denormalized for coach-access rule)
-drillId:         string
-startedAt:       timestamp
-durationSec:     number
-shotsAttempted:  number
-shotsMade:       number
-accuracyPct:     number
-avgReleaseTimeMs:number
-releaseTimesMs:  array<number>
-dribbleCount:    number
-dribbleSpeedHz:  number        (bounces/sec from inter-bounce intervals)
-reactionTimesMs: array<number>
+playerId:         string (uid)   (immutable)
+teamId:           string | null  (denormalized at session time for coach-access rule)
+drillId:          string
+startedAt:        timestamp
+durationSec:      number
+shotsAttempted:   number
+shotsMade:        number
+accuracyPct:      number
+releaseTimesMs:   array<number>
+avgReleaseTimeMs: number
+dribbleCount:     number
+dribbleSpeedHz:   number         (bounces/sec from inter-bounce intervals)
+reactionTimesMs:  array<number>
+avgReactionTimeMs:number
+appVersion:       string         (for debugging metric anomalies across releases)
 ```
+Metric fields not covered by the drill's `measures` are written as `0` / `[]` so every
+session document has one shape (simplifies trend queries and chart code).
 
-**Security rules (N-05, verbatim intent from D3):**
-- `sessions`: read allowed iff `request.auth.uid == resource.data.playerId` OR requester is a coach whose `teamId` matches `resource.data.teamId`; write only by the owning player.
-- `drills`: read by any authenticated user; client writes denied.
-- `users`: own document readable/writable; coaches can read documents of players on their team.
-- No raw video stored anywhere (N-04).
+**Security rules (N-05, implemented in `firebase/firestore.rules`):**
+- `sessions`: create only by the owning player (`playerId == auth.uid`, `teamId` stamped from
+  their profile); read by owner or a coach whose `teamId` matches; **updates denied**
+  (immutable records of fact); **delete by owner** (implements the legal right to erasure).
+- `teams`: coach creates own team; a non-coach update may *only* add the caller's own UID to
+  `playerIds` (join-by-code), enforced via `diff().affectedKeys()` + set difference.
+- `drills`: read by any authenticated user; all client writes denied (Admin SDK seeding only).
+- `users`: own document create/read/update (role immutable); coaches read own team's players.
+- No raw video stored anywhere — no video field exists in any collection (N-04, decision C1).
 
-**Offline:** Firestore's built-in offline persistence covers the "record at the gym, sync later" requirement; the drill catalogue is cached locally for offline drill selection.
+**Indexes (`firebase/firestore.indexes.json`):** `sessions(playerId, startedAt DESC)` for
+player history, `sessions(teamId, startedAt DESC)` for the coach dashboard, and
+`sessions(playerId, drillId, startedAt DESC)` for per-drill trend charts.
+
+**Offline:** Firestore's built-in offline persistence covers the "record at the gym, sync
+later" requirement (N-01); the drill catalogue uses cache-first reads so the Drill Library
+works offline after first launch.
 
 ---
 
