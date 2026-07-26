@@ -83,6 +83,27 @@ class LiveSessionViewModel(
         }
     }
 
+    // CV pipeline event entry points (called from the fragment's listener).
+    // Guarded on the running recorder so late events after Finish are dropped.
+
+    fun onShotDetected(made: Boolean, releaseTimeMs: Long) {
+        val recorder = recorder?.takeIf { it.isRunning } ?: return
+        recorder.recordShot(made, releaseTimeMs)
+        _uiState.update { it.copy(stats = recorder.currentStats()) }
+    }
+
+    fun onDribbleDetected(intervalMs: Long) {
+        val recorder = recorder?.takeIf { it.isRunning } ?: return
+        recorder.recordDribble(intervalMs)
+        _uiState.update { it.copy(stats = recorder.currentStats()) }
+    }
+
+    fun onReactionMeasured(reactionMs: Long) {
+        val recorder = recorder?.takeIf { it.isRunning } ?: return
+        recorder.recordReaction(reactionMs)
+        _uiState.update { it.copy(stats = recorder.currentStats()) }
+    }
+
     fun finishSession() {
         val recorder = recorder ?: return
         if (!recorder.isRunning) return

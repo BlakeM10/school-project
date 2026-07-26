@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
@@ -24,19 +25,28 @@ import com.google.android.material.snackbar.Snackbar
 import com.nextgen.courtvision.BuildConfig
 import com.nextgen.courtvision.CourtVisionApp
 import com.nextgen.courtvision.R
+import com.nextgen.courtvision.cv.CameraCVPipeline
+import com.nextgen.courtvision.cv.FeedbackEngine
 import com.nextgen.courtvision.databinding.FragmentLiveSessionBinding
+import com.nextgen.courtvision.domain.cv.BallDetection
+import com.nextgen.courtvision.domain.cv.CVPipelineListener
+import com.nextgen.courtvision.domain.cv.PoseFrame
+import com.nextgen.courtvision.domain.cv.ShotEvent
 import com.nextgen.courtvision.ui.drilllibrary.DrillLibraryFragment
 import com.nextgen.courtvision.ui.summary.SessionSummaryFragment
 import com.nextgen.courtvision.viewmodel.LiveSessionViewModel
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
- * Live Session screen: camera viewfinder + metric HUD + recording controls.
- * Phase 6 renders the full screen with a real camera preview; the CV pipeline
- * that feeds detections into the recorder is attached in Phase 7, so live
- * metric counters remain at zero until then.
+ * Live Session screen: camera viewfinder, green skeleton + ball box overlay,
+ * metric HUD, audio feedback, and the recording lifecycle. The CV pipeline
+ * (BlazePose + TFLite ball detection) analyses frames and its events drive the
+ * SessionRecorder through the ViewModel.
  */
-class LiveSessionFragment : Fragment() {
+class LiveSessionFragment : Fragment(), CVPipelineListener {
 
     private var _binding: FragmentLiveSessionBinding? = null
     private val binding get() = _binding!!
@@ -52,10 +62,16 @@ class LiveSessionFragment : Fragment() {
         )
     }
 
+    private var cvPipeline: CameraCVPipeline? = null
+    private var feedbackEngine: FeedbackEngine? = null
+    private var analysisExecutor: ExecutorService? = null
+    private var latestPose: PoseFrame? = null
+    private var latestBall: BallDetection? = null
+
     private val requestCameraPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
-                bindCamera()
+                bindCameraWhenReady()
             } else {
                 Snackbar.make(
                     binding.root,
@@ -77,8 +93,16 @@ class LiveSessionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.buttonStart.setOnClickListener { viewModel.startRecording() }
-        binding.buttonFinish.setOnClickListener { viewModel.finishSession() }
+        feedbackEngine = FeedbackEngine()
+
+        binding.buttonStart.setOnClickListener {
+            viewModel.startRecording()
+            cvPipeline?.setRecording(true)
+        }
+        binding.buttonFinish.setOnClickListener {
+            cvPipeline?.setRecording(false)
+            viewModel.finishSession()
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -111,30 +135,81 @@ class LiveSessionFragment : Fragment() {
         }
 
         if (hasCameraPermission()) {
-            bindCamera()
+            bindCameraWhenReady()
         } else {
             requestCameraPermission.launch(Manifest.permission.CAMERA)
         }
     }
 
-    private fun hasCameraPermission(): Boolean = ContextCompat.checkSelfPermission(
-        requireContext(), Manifest.permission.CAMERA,
-    ) == PackageManager.PERMISSION_GRANTED
+    /** Camera + pipeline need the drill's measures, so wait for the drill load. */
+    private fun bindCameraWhenReady() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val drill = viewModel.uiState.first { it.drill != null }.drill ?: return@launch
+            if (cvPipeline == null) setUpPipelineAndCamera(drill.measures)
+        }
+    }
 
-    private fun bindCamera() {
+    private fun setUpPipelineAndCamera(measures: List<com.nextgen.courtvision.domain.model.Measure>) {
+        val pipeline = CameraCVPipeline(requireContext().applicationContext, measures, this)
+        pipeline.onReactionCue = { feedbackEngine?.playReactionCue() }
+        cvPipeline = pipeline
+
+        binding.modelsWarning.isVisible = !pipeline.isFullyAvailable
+
+        val executor = Executors.newSingleThreadExecutor()
+        analysisExecutor = executor
+
         val providerFuture = ProcessCameraProvider.getInstance(requireContext())
         providerFuture.addListener({
             if (_binding == null) return@addListener
             val provider = providerFuture.get()
+
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(binding.previewView.surfaceProvider)
             }
+            val analysis = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+                .also { it.setAnalyzer(executor, pipeline) }
+
             provider.unbindAll()
             provider.bindToLifecycle(
-                viewLifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview,
+                viewLifecycleOwner,
+                CameraSelector.DEFAULT_BACK_CAMERA,
+                preview,
+                analysis,
             )
         }, ContextCompat.getMainExecutor(requireContext()))
     }
+
+    // CVPipelineListener — all callbacks arrive on the main thread.
+
+    override fun onPoseFrame(frame: PoseFrame) {
+        latestPose = frame
+        _binding?.poseOverlay?.update(latestPose, latestBall)
+    }
+
+    override fun onBallDetected(ball: BallDetection) {
+        latestBall = ball
+        _binding?.poseOverlay?.update(latestPose, latestBall)
+    }
+
+    override fun onShotDetected(event: ShotEvent) {
+        feedbackEngine?.playShotFeedback(event.made)
+        viewModel.onShotDetected(event.made, event.releaseTimeMs)
+    }
+
+    override fun onDribbleDetected(intervalMs: Long) {
+        viewModel.onDribbleDetected(intervalMs)
+    }
+
+    override fun onReactionMeasured(reactionMs: Long) {
+        viewModel.onReactionMeasured(reactionMs)
+    }
+
+    private fun hasCameraPermission(): Boolean = ContextCompat.checkSelfPermission(
+        requireContext(), Manifest.permission.CAMERA,
+    ) == PackageManager.PERMISSION_GRANTED
 
     private fun navigateToSummary(sessionId: String) {
         findNavController().navigate(
@@ -146,6 +221,13 @@ class LiveSessionFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        cvPipeline?.setRecording(false)
+        cvPipeline?.close()
+        cvPipeline = null
+        analysisExecutor?.shutdown()
+        analysisExecutor = null
+        feedbackEngine?.release()
+        feedbackEngine = null
         _binding = null
     }
 }

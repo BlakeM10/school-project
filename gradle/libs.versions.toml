@@ -17,6 +17,8 @@ googleid = "1.1.1"
 camerax = "1.3.4"
 mpandroidchart = "v3.1.0"
 guava = "32.1.3-android"
+mediapipeTasks = "0.10.14"
+tfliteTaskVision = "0.4.4"
 junit = "4.13.2"
 mockitoCore = "5.12.0"
 mockitoKotlin = "5.3.1"
@@ -42,6 +44,8 @@ camerax-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", vers
 camerax-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
 mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpandroidchart" }
 guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
+mediapipe-tasks-vision = { group = "com.google.mediapipe", name = "tasks-vision", version.ref = "mediapipeTasks" }
+tflite-task-vision = { group = "org.tensorflow", name = "tensorflow-lite-task-vision", version.ref = "tfliteTaskVision" }
 credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 credentials-play-services-auth = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }

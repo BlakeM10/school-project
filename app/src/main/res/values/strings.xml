@@ -48,6 +48,7 @@
     <string name="hud_dribbles_zero">Dribbles: 0</string>
     <string name="hud_dribbles_format">Dribbles: %1$d</string>
     <string name="error_camera_permission">Camera permission is required to record a drill session.</string>
+    <string name="models_missing_warning">Detection models are not installed — metrics will not be tracked. Run ml-tools/fetch_models.sh and rebuild.</string>
 
     <!-- Session summary -->
     <string name="summary_title">Session complete</string>

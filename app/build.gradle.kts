@@ -72,6 +72,10 @@ dependencies {
     implementation(libs.guava)
     implementation(libs.mpandroidchart)
 
+    // On-device CV per the proposal: MediaPipe BlazePose + TFLite ball detection
+    implementation(libs.mediapipe.tasks.vision)
+    implementation(libs.tflite.task.vision)
+
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)

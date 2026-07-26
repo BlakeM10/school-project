@@ -14,6 +14,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.nextgen.courtvision.ui.livesession.PoseOverlayView
+        android:id="@+id/poseOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/previewView"
+        app:layout_constraintEnd_toEndOf="@id/previewView"
+        app:layout_constraintStart_toStartOf="@id/previewView"
+        app:layout_constraintTop_toTopOf="@id/previewView" />
+
     <!-- Metric HUD over the viewfinder, per the proposal's Live Session design -->
     <LinearLayout
         android:id="@+id/hud"
@@ -67,6 +76,18 @@
             android:text="@string/hud_dribbles_zero"
             android:textColor="@android:color/white" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/modelsWarning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#AA7A2E00"
+        android:padding="10dp"
+        android:gravity="center"
+        android:text="@string/models_missing_warning"
+        android:textColor="@android:color/white"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/buttonStart" />
 
     <ProgressBar
         android:id="@+id/progress"
