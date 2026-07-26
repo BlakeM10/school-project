@@ -1,0 +1,98 @@
+rules_version = '2';
+
+// Court Vision — Firestore security rules
+// Access model (see docs/DATABASE_SCHEMA.md §3):
+//   - players own their profile and sessions; coaches additionally read data
+//     of players on their own team
+//   - drills are read-only reference data
+//   - sessions are immutable records; owner may delete (legal right to erasure)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isCoachOfTeam(teamId) {
+      return isSignedIn()
+        && teamId != null
+        && me().role == 'coach'
+        && me().teamId == teamId;
+    }
+
+    match /users/{uid} {
+      // Registration writes the caller's own profile with a fixed shape.
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role in ['player', 'coach']
+        && request.resource.data.keys().hasAll(['role', 'displayName', 'email', 'teamId', 'createdAt']);
+
+      allow read: if isSignedIn()
+        && (request.auth.uid == uid || isCoachOfTeam(resource.data.teamId));
+
+      // Own profile only; role is immutable after creation.
+      allow update: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.role == resource.data.role;
+
+      allow delete: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /teams/{teamId} {
+      // A coach creates the team and must list themselves as its only member.
+      allow create: if isSignedIn()
+        && me().role == 'coach'
+        && request.resource.data.coachIds == [request.auth.uid]
+        && request.resource.data.playerIds == [];
+
+      // Signed-in read is required for the join-by-code query.
+      // Known pilot-scope trade-off, documented in the schema.
+      allow read: if isSignedIn();
+
+      // Either the coach edits their own team, or a player joins:
+      // the ONLY change a non-coach may make is adding their own uid to playerIds.
+      allow update: if isSignedIn()
+        && (
+          request.auth.uid in resource.data.coachIds
+          || (
+            request.resource.data.diff(resource.data).affectedKeys() == ['playerIds'].toSet()
+            && request.resource.data.playerIds.toSet()
+                 .difference(resource.data.playerIds.toSet()) == [request.auth.uid].toSet()
+            && resource.data.playerIds.toSet()
+                 .difference(request.resource.data.playerIds.toSet()).size() == 0
+          )
+        );
+
+      allow delete: if isSignedIn() && request.auth.uid in resource.data.coachIds;
+    }
+
+    match /drills/{drillId} {
+      // Read-only reference data, seeded via Admin SDK / console only.
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /sessions/{sessionId} {
+      // Players create only their own sessions, stamped with their current team.
+      allow create: if isSignedIn()
+        && request.resource.data.playerId == request.auth.uid
+        && request.resource.data.teamId == me().teamId;
+
+      allow read: if isSignedIn()
+        && (
+          resource.data.playerId == request.auth.uid
+          || isCoachOfTeam(resource.data.teamId)
+        );
+
+      // Sessions are immutable records of fact.
+      allow update: if false;
+
+      // Right to erasure: the owning player may delete their own data.
+      allow delete: if isSignedIn() && resource.data.playerId == request.auth.uid;
+    }
+  }
+}

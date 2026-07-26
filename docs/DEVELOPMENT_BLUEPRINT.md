@@ -2,7 +2,12 @@
 
 **Project:** Court Vision analytics system for NextGen Basketball Foundation (Academy)
 **Author of source documents:** Martin Blake (BSc Hons Computing Information Systems, NACIT)
-**Blueprint status:** DRAFT — awaiting approval (Phase 2 checkpoint)
+**Blueprint status:** APPROVED (2026-07-26) with the following contradiction resolutions:
+- **C1 resolved:** No video retention. Frames are processed on-device and discarded; only metrics are stored. The replay feature (F-18) is out of scope.
+- **C2 resolved:** Push notifications (F-19) deferred — not in core scope; may be added later via FCM.
+- **C3 resolved:** Reaction-time stimulus is audio-only.
+- **Account provisioning:** self sign-up as player or coach; a coach creates a team which generates a join code; players enter the code to join the team.
+- **Dev environment:** standard Kotlin/Gradle Android project, buildable from the CLI and usable from VS Code; Android SDK required on the user's machine for device/emulator runs.
 
 This blueprint is derived exclusively from four project documents:
 
