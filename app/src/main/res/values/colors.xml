@@ -1,27 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Brand anchors (referenced from code: charts, radial view) -->
-    <color name="court_orange">#E65100</color>
-    <color name="court_navy">#1A237E</color>
+    <!-- Brand gradient stops -->
+    <color name="blue_dark">#0F4CFF</color>
+    <color name="blue_mid">#2F80FF</color>
+    <color name="blue_light">#5AA9FF</color>
 
-    <!-- Material 3 light palette — warm court-inspired neutrals -->
-    <color name="cv_primary">#B34700</color>
+    <!-- Chart accents (referenced from code) -->
+    <color name="chart_accent">#2F80FF</color>
+    <color name="chart_accent_deep">#0F4CFF</color>
+
+    <!-- Legacy names kept for safety; now mapped to the blue system -->
+    <color name="court_orange">#2F80FF</color>
+    <color name="court_navy">#0F4CFF</color>
+
+    <!-- Material 3 light palette — predominantly white, cool neutrals -->
+    <color name="cv_primary">#1F5EF7</color>
     <color name="cv_on_primary">#FFFFFF</color>
-    <color name="cv_primary_container">#FFDBC8</color>
-    <color name="cv_on_primary_container">#331200</color>
-    <color name="cv_secondary">#39448F</color>
+    <color name="cv_primary_container">#E4EDFF</color>
+    <color name="cv_on_primary_container">#0A2C7A</color>
+    <color name="cv_secondary">#54607A</color>
     <color name="cv_on_secondary">#FFFFFF</color>
-    <color name="cv_secondary_container">#DEE0FF</color>
-    <color name="cv_on_secondary_container">#0B1666</color>
-    <color name="cv_background">#FFF8F5</color>
-    <color name="cv_on_background">#221A15</color>
-    <color name="cv_surface">#FFF8F5</color>
-    <color name="cv_on_surface">#221A15</color>
-    <color name="cv_surface_variant">#F4DED3</color>
-    <color name="cv_on_surface_variant">#52443C</color>
-    <color name="cv_outline">#85736A</color>
-    <color name="cv_error">#BA1A1A</color>
+    <color name="cv_secondary_container">#E7ECF7</color>
+    <color name="cv_on_secondary_container">#1B2337</color>
+    <color name="cv_background">#FFFFFF</color>
+    <color name="cv_on_background">#0E1526</color>
+    <color name="cv_surface">#FFFFFF</color>
+    <color name="cv_on_surface">#0E1526</color>
+    <color name="cv_surface_variant">#F3F6FB</color>
+    <color name="cv_on_surface_variant">#5B6475</color>
+    <color name="cv_outline">#D7DEEA</color>
+    <color name="cv_error">#D3302F</color>
     <color name="cv_on_error">#FFFFFF</color>
 
-    <color name="ic_launcher_background">#E65100</color>
+    <!-- Semantic status -->
+    <color name="cv_success">#0E9F6E</color>
+    <color name="cv_success_container">#DEF7EC</color>
+    <color name="cv_warning">#B7791F</color>
+    <color name="cv_warning_container">#FDF2DC</color>
+
+    <color name="ic_launcher_background">#0F4CFF</color>
 </resources>

@@ -22,9 +22,10 @@ import com.nextgen.courtvision.R
 import com.nextgen.courtvision.databinding.FragmentDrillLibraryBinding
 import com.nextgen.courtvision.viewmodel.AuthViewModel
 import com.nextgen.courtvision.viewmodel.DrillLibraryViewModel
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
-/** Player home screen: drill catalogue, team joining, and progress access. */
+/** Player dashboard: welcome header, training stats, insights, drill catalogue. */
 class DrillLibraryFragment : Fragment() {
 
     private var _binding: FragmentDrillLibraryBinding? = null
@@ -77,6 +78,32 @@ class DrillLibraryFragment : Fragment() {
                     binding.emptyState.isVisible =
                         !state.loading && state.drills.isEmpty() && state.error == null
                     drillAdapter.submitList(state.drills)
+
+                    val name = state.user?.displayName.orEmpty()
+                    binding.welcomeName.text = name.ifBlank { getString(R.string.role_player) }
+                    binding.avatarText.text =
+                        name.trim().firstOrNull()?.uppercase() ?: "•"
+
+                    binding.todayStatus.text = getString(
+                        if (state.stats.trainedToday) R.string.home_today_done
+                        else R.string.home_today_pending,
+                    )
+                    binding.statStreak.bind(
+                        value = state.stats.streakDays.toString(),
+                        label = getString(R.string.stat_streak_label),
+                    )
+                    binding.statSessions.bind(
+                        value = state.stats.sessionCount.toString(),
+                        label = getString(R.string.stat_sessions_label),
+                    )
+                    binding.statAccuracy.bind(
+                        value = "${state.stats.avgAccuracyPct.roundToInt()}%",
+                        label = getString(R.string.stat_accuracy_label),
+                        trend = trendText(state.stats.accuracyDeltaPct),
+                    )
+                    binding.insightsText.text =
+                        state.insights.joinToString("\n\n") { "•  $it" }
+
                     state.error?.let {
                         Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                         viewModel.acknowledgeError()
@@ -84,6 +111,12 @@ class DrillLibraryFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun trendText(deltaPct: Double): String? = when {
+        deltaPct >= 1 -> getString(R.string.trend_up_format, deltaPct.roundToInt())
+        deltaPct <= -1 -> getString(R.string.trend_down_format, -deltaPct.roundToInt())
+        else -> null
     }
 
     private fun showJoinTeamDialog() {

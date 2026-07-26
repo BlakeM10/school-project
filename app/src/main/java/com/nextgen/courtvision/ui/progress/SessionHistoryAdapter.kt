@@ -2,6 +2,7 @@ package com.nextgen.courtvision.ui.progress
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -34,14 +35,43 @@ class SessionHistoryAdapter(
         fun bind(session: Session) {
             val context = binding.root.context
             binding.sessionDrillName.text = drillNameFor(session.drillId)
-            binding.sessionDate.text = dateFormat.format(Date(session.startedAtMillis))
+            binding.sessionDate.text = context.getString(
+                R.string.session_meta_format,
+                dateFormat.format(Date(session.startedAtMillis)),
+                session.durationSec / 60,
+                session.durationSec % 60,
+            )
             binding.sessionStats.text = context.getString(
-                R.string.session_stats_format,
+                R.string.session_stats_short_format,
                 session.shotsMade,
                 session.shotsAttempted,
-                session.accuracyPct.toInt(),
             )
-            binding.buttonDelete.setOnClickListener { onDeleteClicked(session) }
+            binding.sessionAccuracy.text = "${session.accuracyPct.toInt()}%"
+            binding.accuracyBar.progress = session.accuracyPct.toInt()
+
+            binding.performanceBadge.text = context.getString(
+                when {
+                    session.shotsAttempted == 0 -> R.string.badge_recorded
+                    session.accuracyPct >= 70 -> R.string.badge_excellent
+                    session.accuracyPct >= 50 -> R.string.badge_solid
+                    else -> R.string.badge_building
+                },
+            )
+
+            // Destructive action lives in an overflow menu, not inline on the card.
+            binding.buttonOverflow.setOnClickListener { anchor ->
+                PopupMenu(context, anchor).apply {
+                    menuInflater.inflate(R.menu.menu_session_item, menu)
+                    setOnMenuItemClickListener { item ->
+                        if (item.itemId == R.id.action_delete_session) {
+                            onDeleteClicked(session)
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                }.show()
+            }
         }
     }
 

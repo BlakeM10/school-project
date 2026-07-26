@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,7 +10,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:paddingStart="20dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="28dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -18,12 +21,25 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/screen_coach_dashboard"
-                android:textAppearance="@style/TextAppearance.CourtVision.ScreenTitle" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/screen_coach_dashboard"
+                    android:textAppearance="@style/TextAppearance.CourtVision.ScreenTitle" />
+
+                <TextView
+                    android:id="@+id/teamName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonSignOut"
@@ -43,7 +59,7 @@
             android:layout_marginTop="16dp"
             android:visibility="gone" />
 
-        <!-- Shown until the coach has created their team -->
+        <!-- Team creation (first run) -->
         <LinearLayout
             android:id="@+id/createTeamGroup"
             android:layout_width="match_parent"
@@ -52,60 +68,60 @@
             android:orientation="vertical"
             android:visibility="gone">
 
-            <com.google.android.material.card.MaterialCardView
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardBackgroundColor="?attr/colorSecondaryContainer"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp">
+                android:background="@drawable/gradient_primary"
+                android:padding="20dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/create_team_title"
-                        android:textAppearance="@style/TextAppearance.CourtVision.SectionTitle"
-                        android:textColor="?attr/colorOnSecondaryContainer" />
+                        android:textAppearance="?attr/textAppearanceTitleLarge"
+                        android:textColor="@android:color/white"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:alpha="0.9"
                         android:text="@string/create_team_prompt"
                         android:textAppearance="?attr/textAppearanceBodySmall"
-                        android:textColor="?attr/colorOnSecondaryContainer" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.CourtVision.Field"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:hint="@string/hint_team_name">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/inputTeamName"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textCapWords" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/buttonCreateTeam"
-                        style="@style/Widget.CourtVision.Button"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:text="@string/action_create_team" />
+                        android:textColor="@android:color/white" />
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.CourtVision.Field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="@string/hint_team_name">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/inputTeamName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textCapWords" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonCreateTeam"
+                style="@style/Widget.CourtVision.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/action_create_team" />
         </LinearLayout>
 
-        <!-- Shown once a team exists -->
+        <!-- Analytics dashboard -->
         <LinearLayout
             android:id="@+id/dashboardGroup"
             android:layout_width="match_parent"
@@ -113,50 +129,150 @@
             android:orientation="vertical"
             android:visibility="gone">
 
+            <!-- Team overview stat tiles -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <com.nextgen.courtvision.ui.common.StatCardView
+                    android:id="@+id/statTeamAccuracy"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <com.nextgen.courtvision.ui.common.StatCardView
+                    android:id="@+id/statPlayers"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <com.nextgen.courtvision.ui.common.StatCardView
+                    android:id="@+id/statImproving"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <com.nextgen.courtvision.ui.common.StatCardView
+                    android:id="@+id/statAttention"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <!-- Join code -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="@string/join_code_caption"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <TextView
+                android:id="@+id/joinCode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_code_box"
+                android:fontFamily="monospace"
+                android:gravity="center"
+                android:letterSpacing="0.35"
+                android:padding="14dp"
+                android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold" />
+
+            <!-- AI-style recommendations (rule-based from real data) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="1dp">
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/teamName"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textAppearance="?attr/textAppearanceTitleLarge"
-                        android:textStyle="bold" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_bolt"
+                            app:tint="?attr/colorPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/coach_recommendations_title"
+                            android:textAppearance="@style/TextAppearance.CourtVision.SectionTitle" />
+                    </LinearLayout>
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="@string/join_code_caption"
-                        android:textAppearance="?attr/textAppearanceLabelMedium"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
-
-                    <TextView
-                        android:id="@+id/joinCode"
+                        android:id="@+id/recommendationsText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_code_box"
-                        android:fontFamily="monospace"
-                        android:gravity="center"
-                        android:letterSpacing="0.35"
-                        android:padding="14dp"
-                        android:textAppearance="?attr/textAppearanceHeadlineMedium"
-                        android:textColor="?attr/colorPrimary"
-                        android:textStyle="bold" />
+                        android:lineSpacingExtra="4dp"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Top performers -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="@string/coach_top_performers"
+                android:textAppearance="@style/TextAppearance.CourtVision.SectionTitle" />
+
+            <LinearLayout
+                android:id="@+id/topPerformers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="vertical" />
+
+            <!-- Needs attention -->
+            <TextView
+                android:id="@+id/attentionTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/coach_needs_attention"
+                android:textAppearance="@style/TextAppearance.CourtVision.SectionTitle"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/attentionList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="vertical" />
+
+            <!-- Roster + per-player trend -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -185,7 +301,7 @@
                 android:id="@+id/selectedPlayerName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
+                android:layout_marginTop="20dp"
                 android:textAppearance="@style/TextAppearance.CourtVision.SectionTitle"
                 android:visibility="gone" />
 
@@ -206,4 +322,4 @@
                 android:visibility="gone" />
         </LinearLayout>
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

@@ -50,6 +50,8 @@ class CoachDashboardViewModelTest {
     fun setUp() {
         authRepository = mock()
         firestoreRepository = mock()
+        // Team analytics stream; empty by default.
+        whenever(firestoreRepository.observeTeamSessions(any())).thenReturn(flowOf(emptyList()))
     }
 
     @Test

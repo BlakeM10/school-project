@@ -8,6 +8,7 @@ import com.nextgen.courtvision.domain.model.Measure
 import com.nextgen.courtvision.domain.model.Player
 import com.nextgen.courtvision.domain.model.Team
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -51,6 +52,8 @@ class DrillLibraryViewModelTest {
     fun setUp() {
         authRepository = mock()
         firestoreRepository = mock()
+        // Home-screen stats stream; empty history by default.
+        whenever(firestoreRepository.observeSessions(any())).thenReturn(flowOf(emptyList()))
     }
 
     @Test

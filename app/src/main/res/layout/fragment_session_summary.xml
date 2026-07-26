@@ -28,53 +28,121 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
                 android:text="@string/summary_title"
-                android:textAppearance="@style/TextAppearance.CourtVision.ScreenTitle" />
+                android:textAppearance="@style/TextAppearance.CourtVision.ScreenTitle"
+                android:textSize="26sp" />
 
             <TextView
                 android:id="@+id/drillName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:layout_marginTop="2dp"
                 android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:textColor="?attr/colorPrimary"
-                android:textStyle="bold" />
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
+            <TextView
+                android:id="@+id/personalBestBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_badge"
+                android:paddingStart="14dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="14dp"
+                android:paddingBottom="6dp"
+                android:text="@string/summary_personal_best"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="?attr/colorOnPrimaryContainer"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <com.nextgen.courtvision.ui.summary.RadialChartView
+                android:id="@+id/radialChart"
+                android:layout_width="230dp"
+                android:layout_height="230dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="12dp" />
+
+            <!-- Stat tiles -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <com.nextgen.courtvision.ui.common.StatCardView
+                    android:id="@+id/statMade"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <com.nextgen.courtvision.ui.common.StatCardView
+                    android:id="@+id/statAttempted"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1" />
+
+                <com.nextgen.courtvision.ui.common.StatCardView
+                    android:id="@+id/statDuration"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <!-- Coach feedback (rule-based from this session's data) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="1dp">
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="16dp">
 
-                    <com.nextgen.courtvision.ui.summary.RadialChartView
-                        android:id="@+id/radialChart"
-                        android:layout_width="190dp"
-                        android:layout_height="190dp" />
-
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/summary_accuracy_caption"
-                        android:textAppearance="?attr/textAppearanceLabelLarge"
-                        android:textColor="?attr/colorOnSurfaceVariant" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <com.github.mikephil.charting.charts.BarChart
-                        android:id="@+id/shotChart"
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_bolt"
+                            app:tint="?attr/colorPrimary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/summary_feedback_title"
+                            android:textAppearance="@style/TextAppearance.CourtVision.SectionTitle" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/feedbackText"
                         android:layout_width="match_parent"
-                        android:layout_height="170dp"
-                        android:layout_marginTop="18dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:lineSpacingExtra="4dp"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Shot distribution + detail rows -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -86,13 +154,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="16dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/summary_metrics_title"
-                        android:textAppearance="@style/TextAppearance.CourtVision.SectionTitle" />
+                    <com.github.mikephil.charting.charts.BarChart
+                        android:id="@+id/shotChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp" />
 
                     <TextView
                         android:id="@+id/rowShots"
@@ -149,12 +216,37 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonDone"
+                android:id="@+id/buttonTrainAgain"
                 style="@style/Widget.CourtVision.Button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="@string/action_done" />
+                android:text="@string/action_train_again" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonShare"
+                    style="@style/Widget.CourtVision.Button.Outlined"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="1"
+                    android:text="@string/action_share" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/buttonDone"
+                    style="@style/Widget.CourtVision.Button.Outlined"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="1"
+                    android:text="@string/action_done" />
+            </LinearLayout>
         </LinearLayout>
     </FrameLayout>
 </ScrollView>

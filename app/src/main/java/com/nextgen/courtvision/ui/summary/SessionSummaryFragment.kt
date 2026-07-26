@@ -1,10 +1,11 @@
 package com.nextgen.courtvision.ui.summary
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -12,19 +13,18 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import androidx.navigation.navOptions
 import com.google.android.material.snackbar.Snackbar
 import com.nextgen.courtvision.CourtVisionApp
 import com.nextgen.courtvision.R
 import com.nextgen.courtvision.databinding.FragmentSessionSummaryBinding
 import com.nextgen.courtvision.domain.model.Session
+import com.nextgen.courtvision.ui.common.ChartStyler
+import com.nextgen.courtvision.ui.drilllibrary.DrillLibraryFragment
 import com.nextgen.courtvision.viewmodel.SessionSummaryViewModel
 import kotlinx.coroutines.launch
 
-/** Post-drill summary: radial accuracy chart, shot distribution, metric rows. */
+/** Rewarding post-drill screen: animated ring, stat tiles, feedback, share. */
 class SessionSummaryFragment : Fragment() {
 
     private var _binding: FragmentSessionSummaryBinding? = null
@@ -38,6 +38,8 @@ class SessionSummaryFragment : Fragment() {
             firestoreRepository = container.firestoreRepository,
         )
     }
+
+    private var ringAnimated = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -58,7 +60,9 @@ class SessionSummaryFragment : Fragment() {
                 viewModel.uiState.collect { state ->
                     binding.progress.isVisible = state.loading
                     binding.content.isVisible = state.session != null
-                    state.session?.let { render(it, state.drill?.name) }
+                    state.session?.let { session ->
+                        render(session, state.drill?.name, state.isPersonalBest, state.feedback)
+                    }
                     state.error?.let {
                         Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                     }
@@ -67,11 +71,40 @@ class SessionSummaryFragment : Fragment() {
         }
     }
 
-    private fun render(session: Session, drillName: String?) {
+    private fun render(
+        session: Session,
+        drillName: String?,
+        isPersonalBest: Boolean,
+        feedback: List<String>,
+    ) {
         binding.drillName.text = drillName ?: session.drillId
-        binding.radialChart.progressPct = session.accuracyPct.toFloat()
+        binding.personalBestBadge.isVisible = isPersonalBest
 
-        renderShotChart(session)
+        if (!ringAnimated) {
+            ringAnimated = true
+            binding.radialChart.setProgressAnimated(session.accuracyPct.toFloat())
+        } else {
+            binding.radialChart.progressPct = session.accuracyPct.toFloat()
+        }
+
+        binding.statMade.bind(session.shotsMade.toString(), getString(R.string.stat_made_label))
+        binding.statAttempted.bind(
+            session.shotsAttempted.toString(), getString(R.string.stat_attempted_label),
+        )
+        binding.statDuration.bind(
+            getString(R.string.drill_duration_format, session.durationSec / 60, session.durationSec % 60),
+            getString(R.string.stat_duration_label),
+        )
+
+        binding.feedbackText.text = feedback.joinToString("\n\n") { "•  $it" }
+
+        ChartStyler.applyShotDistribution(
+            binding.shotChart,
+            made = session.shotsMade,
+            missed = session.shotsAttempted - session.shotsMade,
+            madeLabel = getString(R.string.chart_made),
+            missedLabel = getString(R.string.chart_missed),
+        )
 
         binding.rowShots.text = getString(
             R.string.summary_shots_format, session.shotsMade, session.shotsAttempted,
@@ -82,9 +115,7 @@ class SessionSummaryFragment : Fragment() {
             getString(R.string.summary_not_measured)
         }
         binding.rowDribbles.text = if (session.dribbleCount > 0) {
-            getString(
-                R.string.summary_dribbles_format, session.dribbleCount, session.dribbleSpeedHz,
-            )
+            getString(R.string.summary_dribbles_format, session.dribbleCount, session.dribbleSpeedHz)
         } else {
             getString(R.string.summary_not_measured)
         }
@@ -96,36 +127,30 @@ class SessionSummaryFragment : Fragment() {
         binding.rowDuration.text = getString(
             R.string.drill_duration_format, session.durationSec / 60, session.durationSec % 60,
         )
+
+        binding.buttonTrainAgain.setOnClickListener {
+            findNavController().navigate(
+                R.id.liveSessionFragment,
+                bundleOf(DrillLibraryFragment.ARG_DRILL_ID to session.drillId),
+                navOptions { popUpTo(R.id.sessionSummaryFragment) { inclusive = true } },
+            )
+        }
+        binding.buttonShare.setOnClickListener { shareSession(session, drillName) }
     }
 
-    private fun renderShotChart(session: Session) {
-        val missed = session.shotsAttempted - session.shotsMade
-        val entries = listOf(
-            BarEntry(0f, session.shotsMade.toFloat()),
-            BarEntry(1f, missed.toFloat()),
+    private fun shareSession(session: Session, drillName: String?) {
+        val text = getString(
+            R.string.share_session_format,
+            drillName ?: session.drillId,
+            session.shotsMade,
+            session.shotsAttempted,
+            session.accuracyPct.toInt(),
         )
-        val dataSet = BarDataSet(entries, "").apply {
-            colors = listOf(
-                ContextCompat.getColor(requireContext(), R.color.court_orange),
-                ContextCompat.getColor(requireContext(), R.color.court_navy),
-            )
-            valueTextSize = 12f
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, text)
         }
-        binding.shotChart.apply {
-            data = BarData(dataSet)
-            description.isEnabled = false
-            legend.isEnabled = false
-            axisRight.isEnabled = false
-            axisLeft.axisMinimum = 0f
-            axisLeft.granularity = 1f
-            xAxis.setDrawGridLines(false)
-            xAxis.granularity = 1f
-            xAxis.valueFormatter = IndexAxisValueFormatter(
-                listOf(getString(R.string.chart_made), getString(R.string.chart_missed)),
-            )
-            setTouchEnabled(false)
-            invalidate()
-        }
+        startActivity(Intent.createChooser(intent, getString(R.string.action_share)))
     }
 
     override fun onDestroyView() {

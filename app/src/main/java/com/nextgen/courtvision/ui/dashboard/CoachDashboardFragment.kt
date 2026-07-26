@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -12,22 +13,24 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
 import com.google.android.material.snackbar.Snackbar
 import com.nextgen.courtvision.CourtVisionApp
 import com.nextgen.courtvision.R
 import com.nextgen.courtvision.databinding.FragmentCoachDashboardBinding
+import com.nextgen.courtvision.databinding.ItemPerformerBinding
 import com.nextgen.courtvision.domain.model.Session
+import com.nextgen.courtvision.domain.stats.PlayerSummary
+import com.nextgen.courtvision.ui.common.ChartStyler
 import com.nextgen.courtvision.viewmodel.AuthViewModel
 import com.nextgen.courtvision.viewmodel.CoachDashboardViewModel
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 
 /**
- * Coach home screen: team creation with a shareable join code, live player
- * roster, and the longitudinal accuracy trend chart for the selected player.
+ * Coach analytics dashboard: team overview tiles, ranked performers,
+ * attention flags, data-driven recommendations, roster, and per-player trends.
  */
 class CoachDashboardFragment : Fragment() {
 
@@ -73,10 +76,32 @@ class CoachDashboardFragment : Fragment() {
                     binding.createTeamGroup.isVisible = state.needsTeam && !state.loading
                     binding.dashboardGroup.isVisible = state.team != null
 
-                    state.team?.let { team ->
-                        binding.teamName.text = team.name
-                        binding.joinCode.text = team.joinCode
-                    }
+                    binding.teamName.text = state.team?.name.orEmpty()
+                    state.team?.let { binding.joinCode.text = it.joinCode }
+
+                    binding.statTeamAccuracy.bind(
+                        "${state.teamAvgAccuracyPct.roundToInt()}%",
+                        getString(R.string.stat_team_accuracy_label),
+                    )
+                    binding.statPlayers.bind(
+                        state.players.size.toString(),
+                        getString(R.string.stat_players_label),
+                    )
+                    binding.statImproving.bind(
+                        state.improvingCount.toString(),
+                        getString(R.string.stat_improving_label),
+                    )
+                    binding.statAttention.bind(
+                        state.attentionCount.toString(),
+                        getString(R.string.stat_attention_label),
+                    )
+
+                    binding.recommendationsText.text =
+                        state.recommendations.joinToString("\n\n") { "•  $it" }
+
+                    renderSummaryRows(binding.topPerformers, state.topPerformers)
+                    binding.attentionTitle.isVisible = state.needsAttention.isNotEmpty()
+                    renderSummaryRows(binding.attentionList, state.needsAttention)
 
                     playerAdapter.submitList(
                         state.players.map {
@@ -101,8 +126,34 @@ class CoachDashboardFragment : Fragment() {
         }
     }
 
+    private fun renderSummaryRows(container: LinearLayout, summaries: List<PlayerSummary>) {
+        container.removeAllViews()
+        summaries.forEachIndexed { index, summary ->
+            val row = ItemPerformerBinding.inflate(layoutInflater, container, false)
+            row.performerRank.text = (index + 1).toString()
+            row.performerName.text = summary.player.displayName
+            row.performerAccuracy.text = "${summary.avgAccuracyPct.roundToInt()}%"
+            val delta = summary.deltaPct.roundToInt()
+            when {
+                delta >= 1 -> {
+                    row.performerTrend.text = getString(R.string.trend_up_format, delta)
+                    row.performerTrend.setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.cv_success),
+                    )
+                }
+                delta <= -1 -> {
+                    row.performerTrend.text = getString(R.string.trend_down_format, abs(delta))
+                    row.performerTrend.setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.cv_error),
+                    )
+                }
+                else -> row.performerTrend.text = ""
+            }
+            container.addView(row.root)
+        }
+    }
+
     private fun renderTrendChart(sessions: List<Session>) {
-        // observeSessions returns newest-first; the trend chart reads oldest → newest.
         val chronological = sessions.sortedBy { it.startedAtMillis }
         binding.trendChart.isVisible = chronological.isNotEmpty()
         binding.emptyTrend.isVisible = chronological.isEmpty()
@@ -111,25 +162,9 @@ class CoachDashboardFragment : Fragment() {
         val entries = chronological.mapIndexed { index, session ->
             Entry(index.toFloat(), session.accuracyPct.toFloat())
         }
-        val dataSet = LineDataSet(entries, getString(R.string.chart_accuracy_label)).apply {
-            color = ContextCompat.getColor(requireContext(), R.color.court_orange)
-            setCircleColor(color)
-            lineWidth = 2.5f
-            circleRadius = 4f
-            setDrawValues(false)
-        }
-        binding.trendChart.apply {
-            data = LineData(dataSet)
-            description.isEnabled = false
-            axisRight.isEnabled = false
-            axisLeft.axisMinimum = 0f
-            axisLeft.axisMaximum = 100f
-            xAxis.position = XAxis.XAxisPosition.BOTTOM
-            xAxis.setDrawGridLines(false)
-            xAxis.granularity = 1f
-            setTouchEnabled(false)
-            invalidate()
-        }
+        ChartStyler.applyAccuracyLine(
+            binding.trendChart, entries, getString(R.string.chart_accuracy_label),
+        )
     }
 
     override fun onDestroyView() {

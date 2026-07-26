@@ -9,6 +9,8 @@ import com.nextgen.courtvision.domain.model.Player
 import com.nextgen.courtvision.domain.model.Session
 import com.nextgen.courtvision.domain.model.Team
 import com.nextgen.courtvision.domain.model.User
+import com.nextgen.courtvision.domain.stats.PlayerSummary
+import com.nextgen.courtvision.domain.stats.StatsCalculator
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,10 +26,21 @@ data class CoachDashboardUiState(
     val players: List<Player> = emptyList(),
     val selectedPlayer: Player? = null,
     val selectedPlayerSessions: List<Session> = emptyList(),
+    val teamSessions: List<Session> = emptyList(),
+    val summaries: List<PlayerSummary> = emptyList(),
+    val recommendations: List<String> = emptyList(),
     val creatingTeam: Boolean = false,
     val error: String? = null,
 ) {
     val needsTeam: Boolean get() = user != null && user.teamId == null
+
+    val teamAvgAccuracyPct: Double
+        get() = summaries.filter { it.sessionCount > 0 }
+            .map { it.avgAccuracyPct }.let { if (it.isEmpty()) 0.0 else it.average() }
+    val improvingCount: Int get() = summaries.count { it.improving }
+    val attentionCount: Int get() = summaries.count { it.needsAttention }
+    val topPerformers: List<PlayerSummary> get() = summaries.filter { it.sessionCount > 0 }.take(3)
+    val needsAttention: List<PlayerSummary> get() = summaries.filter { it.needsAttention }.take(3)
 }
 
 class CoachDashboardViewModel(
@@ -40,6 +53,7 @@ class CoachDashboardViewModel(
 
     private var rosterJob: Job? = null
     private var sessionsJob: Job? = null
+    private var teamSessionsJob: Job? = null
 
     init {
         refresh()
@@ -110,6 +124,7 @@ class CoachDashboardViewModel(
     }
 
     private fun observeRoster(teamId: String) {
+        observeTeamSessions(teamId)
         rosterJob?.cancel()
         rosterJob = viewModelScope.launch {
             firestoreRepository.observeTeamPlayers(teamId)
@@ -118,7 +133,14 @@ class CoachDashboardViewModel(
                 }
                 .collect { players ->
                     val previousSelection = _uiState.value.selectedPlayer
-                    _uiState.update { it.copy(players = players) }
+                    _uiState.update { state ->
+                        val summaries = StatsCalculator.playerSummaries(players, state.teamSessions)
+                        state.copy(
+                            players = players,
+                            summaries = summaries,
+                            recommendations = StatsCalculator.coachRecommendations(summaries),
+                        )
+                    }
                     // Keep the current selection if that player is still on the
                     // roster; otherwise auto-select the first player so the
                     // trend chart is never empty while data exists.
@@ -130,6 +152,24 @@ class CoachDashboardViewModel(
                         else -> _uiState.update {
                             it.copy(selectedPlayer = null, selectedPlayerSessions = emptyList())
                         }
+                    }
+                }
+        }
+    }
+
+    private fun observeTeamSessions(teamId: String) {
+        teamSessionsJob?.cancel()
+        teamSessionsJob = viewModelScope.launch {
+            firestoreRepository.observeTeamSessions(teamId)
+                .catch { /* team analytics are additive; dashboard stays usable */ }
+                .collect { sessions ->
+                    _uiState.update { state ->
+                        val summaries = StatsCalculator.playerSummaries(state.players, sessions)
+                        state.copy(
+                            teamSessions = sessions,
+                            summaries = summaries,
+                            recommendations = StatsCalculator.coachRecommendations(summaries),
+                        )
                     }
                 }
         }

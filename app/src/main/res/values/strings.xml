@@ -12,6 +12,61 @@
 
     <string name="login_subtitle">NextGen Basketball Foundation</string>
     <string name="login_welcome">Welcome back</string>
+
+    <!-- Player dashboard -->
+    <string name="home_welcome">Welcome back</string>
+    <string name="home_today_label">Today</string>
+    <string name="home_today_done">Training complete — great work</string>
+    <string name="home_today_pending">Ready to train?</string>
+    <string name="action_view_progress">View my progress</string>
+    <string name="home_insights_title">Insights</string>
+    <string name="home_drills_title">Drills</string>
+
+    <!-- Stat tiles -->
+    <string name="stat_streak_label">Day streak</string>
+    <string name="stat_sessions_label">Sessions</string>
+    <string name="stat_accuracy_label">Accuracy</string>
+    <string name="stat_avg_label">Avg accuracy</string>
+    <string name="stat_best_label">Highest</string>
+    <string name="stat_shots_label">Shots taken</string>
+    <string name="stat_pb_label">Personal best</string>
+    <string name="stat_made_label">Made</string>
+    <string name="stat_attempted_label">Attempted</string>
+    <string name="stat_duration_label">Duration</string>
+    <string name="trend_up_format">▲ %1$d pts</string>
+    <string name="trend_down_format">▼ %1$d pts</string>
+
+    <!-- Period filters -->
+    <string name="period_weekly">Weekly</string>
+    <string name="period_monthly">Monthly</string>
+    <string name="period_yearly">Yearly</string>
+    <string name="period_all">All time</string>
+    <string name="progress_history_title">Sessions</string>
+
+    <!-- Session cards -->
+    <string name="session_meta_format">%1$s · %2$d:%3$02d</string>
+    <string name="session_stats_short_format">%1$d/%2$d shots made</string>
+    <string name="badge_excellent">Excellent</string>
+    <string name="badge_solid">Solid</string>
+    <string name="badge_building">Building</string>
+    <string name="badge_recorded">Recorded</string>
+    <string name="action_more">More options</string>
+
+    <!-- Coach dashboard -->
+    <string name="stat_team_accuracy_label">Team accuracy</string>
+    <string name="stat_players_label">Players</string>
+    <string name="stat_improving_label">Improving</string>
+    <string name="stat_attention_label">Need attention</string>
+    <string name="coach_recommendations_title">Coach recommendations</string>
+    <string name="coach_top_performers">Top performers</string>
+    <string name="coach_needs_attention">Needs attention</string>
+
+    <!-- Session complete -->
+    <string name="summary_personal_best">★ New personal best</string>
+    <string name="summary_feedback_title">Coach feedback</string>
+    <string name="action_train_again">Train again</string>
+    <string name="action_share">Share</string>
+    <string name="share_session_format">Court Vision — %1$s: %2$d/%3$d shots made (%4$d%% accuracy) 🏀</string>
     <string name="register_subtitle">Track your game. See your progress.</string>
     <string name="drill_library_subtitle">Pick a drill to start training</string>
     <string name="team_banner_title">Join your team</string>

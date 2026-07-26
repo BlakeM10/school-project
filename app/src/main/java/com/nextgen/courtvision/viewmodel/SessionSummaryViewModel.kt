@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.nextgen.courtvision.data.repository.FirestoreRepository
 import com.nextgen.courtvision.domain.model.Drill
 import com.nextgen.courtvision.domain.model.Session
+import com.nextgen.courtvision.domain.stats.StatsCalculator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -16,6 +18,8 @@ data class SessionSummaryUiState(
     val loading: Boolean = true,
     val session: Session? = null,
     val drill: Drill? = null,
+    val isPersonalBest: Boolean = false,
+    val feedback: List<String> = emptyList(),
     val error: String? = null,
 )
 
@@ -33,7 +37,25 @@ class SessionSummaryViewModel(
                 .onSuccess { session ->
                     val drill = firestoreRepository.getDrills()
                         .getOrNull()?.firstOrNull { it.id == session.drillId }
-                    _uiState.update { it.copy(loading = false, session = session, drill = drill) }
+
+                    // Personal best = highest recorded accuracy across the
+                    // player's shooting sessions (this one included).
+                    val history = runCatching {
+                        firestoreRepository.observeSessions(session.playerId).firstOrNull()
+                    }.getOrNull().orEmpty()
+                    val isBest = session.shotsAttempted > 0 &&
+                        history.filter { it.shotsAttempted > 0 && it.id != session.id }
+                            .none { it.accuracyPct >= session.accuracyPct }
+
+                    _uiState.update {
+                        it.copy(
+                            loading = false,
+                            session = session,
+                            drill = drill,
+                            isPersonalBest = isBest,
+                            feedback = StatsCalculator.sessionFeedback(session, isBest),
+                        )
+                    }
                 }
                 .onFailure { e ->
                     _uiState.update { it.copy(loading = false, error = e.message ?: "Could not load session") }

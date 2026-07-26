@@ -7,6 +7,9 @@ import com.nextgen.courtvision.data.repository.AuthRepository
 import com.nextgen.courtvision.data.repository.FirestoreRepository
 import com.nextgen.courtvision.domain.model.Drill
 import com.nextgen.courtvision.domain.model.Session
+import com.nextgen.courtvision.domain.stats.PlayerStats
+import com.nextgen.courtvision.domain.stats.StatsCalculator
+import com.nextgen.courtvision.domain.stats.StatsPeriod
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,15 +19,19 @@ import kotlinx.coroutines.launch
 
 data class PlayerProgressUiState(
     val loading: Boolean = true,
+    val period: StatsPeriod = StatsPeriod.MONTH,
+    val allSessions: List<Session> = emptyList(),
     val sessions: List<Session> = emptyList(),
+    val stats: PlayerStats = PlayerStats.EMPTY,
     val drillsById: Map<String, Drill> = emptyMap(),
     val error: String? = null,
 )
 
-/** Longitudinal progress for the signed-in player (live-updating). */
+/** Longitudinal analytics with period filtering — live-updating. */
 class PlayerProgressViewModel(
     private val authRepository: AuthRepository,
     private val firestoreRepository: FirestoreRepository,
+    private val clock: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlayerProgressUiState())
@@ -45,9 +52,24 @@ class PlayerProgressViewModel(
                     _uiState.update { it.copy(loading = false, error = e.message ?: "Could not load history") }
                 }
                 .collect { sessions ->
-                    _uiState.update { it.copy(loading = false, sessions = sessions) }
+                    _uiState.update { state ->
+                        applyPeriod(state.copy(loading = false, allSessions = sessions), state.period)
+                    }
                 }
         }
+    }
+
+    fun setPeriod(period: StatsPeriod) {
+        _uiState.update { applyPeriod(it, period) }
+    }
+
+    private fun applyPeriod(state: PlayerProgressUiState, period: StatsPeriod): PlayerProgressUiState {
+        val filtered = StatsCalculator.filterByPeriod(state.allSessions, period, clock())
+        return state.copy(
+            period = period,
+            sessions = filtered,
+            stats = StatsCalculator.compute(filtered, clock()),
+        )
     }
 
     fun deleteSession(sessionId: String) {
