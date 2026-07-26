@@ -1,0 +1,3 @@
+# ML model binaries are fetched per-developer, not committed (see ml-tools/fetch_models.sh)
+*.task
+*.tflite

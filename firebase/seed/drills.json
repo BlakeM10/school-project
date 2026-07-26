@@ -1,0 +1,77 @@
+{
+  "_comment": "Starter drill catalogue for the read-only `drills` collection. The project documents require a drill library but enumerate no drills; this set covers every metric the CV pipeline measures. Seed via scripts/seed_drills.js (Admin SDK) — client writes are blocked by security rules.",
+  "drills": {
+    "free_throw_series": {
+      "name": "Free Throw Series",
+      "category": "shooting",
+      "instructions": "Stand at the free throw line. Phone on a stand at the side, both you and the basket in frame. Take 20 free throws at your own pace. A tone confirms each detected shot.",
+      "targetMetrics": { "shots": 20, "accuracyPct": 60 },
+      "durationSec": 300,
+      "measures": ["shots", "releaseTime"],
+      "sortOrder": 1
+    },
+    "spot_shooting": {
+      "name": "Spot Shooting — 5 Positions",
+      "category": "shooting",
+      "instructions": "Take 5 shots from each of 5 spots around the arc (corners, wings, top). Move to the next spot after 5 attempts. Keep both yourself and the basket in frame.",
+      "targetMetrics": { "shots": 25, "accuracyPct": 50 },
+      "durationSec": 480,
+      "measures": ["shots", "releaseTime"],
+      "sortOrder": 2
+    },
+    "quick_release": {
+      "name": "Quick Release Catch-and-Shoot",
+      "category": "shooting",
+      "instructions": "Self-pass or have a partner pass the ball. Shoot as quickly as possible after the catch. Focus on lowering your release time while keeping accuracy above 50%.",
+      "targetMetrics": { "shots": 15, "avgReleaseTimeMs": 700 },
+      "durationSec": 300,
+      "measures": ["shots", "releaseTime"],
+      "sortOrder": 3
+    },
+    "stationary_dribble": {
+      "name": "Stationary Dribble — Right/Left",
+      "category": "dribbling",
+      "instructions": "Stand facing the camera. Dribble with your right hand for 30 seconds, then your left hand for 30 seconds. Keep the ball below waist height and your eyes up.",
+      "targetMetrics": { "dribbleCount": 120 },
+      "durationSec": 60,
+      "measures": ["dribbles"],
+      "sortOrder": 4
+    },
+    "speed_dribble": {
+      "name": "Speed Dribble Burst",
+      "category": "dribbling",
+      "instructions": "Dribble as fast as you can control for 3 bursts of 20 seconds, resting 10 seconds between bursts. The app measures your dribble frequency (bounces per second).",
+      "targetMetrics": { "dribbleSpeedHz": 3.0 },
+      "durationSec": 90,
+      "measures": ["dribbles"],
+      "sortOrder": 5
+    },
+    "reaction_sprint_start": {
+      "name": "Audio Cue Reaction Start",
+      "category": "reaction",
+      "instructions": "Stand ready in an athletic stance facing the camera. When you hear the beep, explode into a sprint start. The app measures the time from the beep to your first movement. 8 repetitions.",
+      "targetMetrics": { "reps": 8, "avgReactionTimeMs": 400 },
+      "durationSec": 240,
+      "measures": ["reactionTime"],
+      "sortOrder": 6
+    },
+    "reaction_defensive_slide": {
+      "name": "Reaction Defensive Slide",
+      "category": "reaction",
+      "instructions": "Start in a defensive stance. On each beep, slide two steps in the opposite direction to your last slide. The app records your reaction time to each cue. 10 cues.",
+      "targetMetrics": { "reps": 10, "avgReactionTimeMs": 450 },
+      "durationSec": 180,
+      "measures": ["reactionTime"],
+      "sortOrder": 7
+    },
+    "combo_dribble_shoot": {
+      "name": "Combo: Dribble Into Jump Shot",
+      "category": "combined",
+      "instructions": "Start at half court in frame. Speed dribble to the arc and pull up for a jump shot. Walk back and repeat 10 times. Measures dribbles, shots, and release time together.",
+      "targetMetrics": { "shots": 10, "accuracyPct": 40 },
+      "durationSec": 420,
+      "measures": ["shots", "releaseTime", "dribbles"],
+      "sortOrder": 8
+    }
+  }
+}

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Court Vision</string>
+
+    <string name="screen_login">Sign in</string>
+    <string name="screen_register">Create account</string>
+    <string name="screen_drill_library">Drill Library</string>
+    <string name="screen_live_session">Live Session</string>
+    <string name="screen_session_summary">Session Summary</string>
+    <string name="screen_player_progress">My Progress</string>
+    <string name="screen_coach_dashboard">Coach Dashboard</string>
+
+    <string name="login_subtitle">NextGen Basketball Foundation</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_name">Full name</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_google">Continue with Google</string>
+    <string name="action_register">Create account</string>
+    <string name="action_sign_out">Sign out</string>
+    <string name="link_create_account">New here? Create an account</string>
+
+    <string name="register_title">Create your account</string>
+    <string name="register_role_prompt">I am a…</string>
+    <string name="role_player">Player</string>
+    <string name="role_coach">Coach</string>
+    <string name="register_complete_profile_title">Finish setting up</string>
+    <string name="register_complete_profile_button">Continue</string>
+
+    <!-- Drill library -->
+    <string name="action_my_progress">My progress</string>
+    <string name="team_banner_text">You are not on a team yet. Ask your coach for the 6-character team code to join.</string>
+    <string name="action_join_team">Join a team</string>
+    <string name="join_team_title">Join your team</string>
+    <string name="join_team_message">Enter the code your coach shared with you.</string>
+    <string name="hint_team_code">Team code</string>
+    <string name="action_join">Join</string>
+    <string name="drills_empty">No drills available yet. Connect to the internet once to download the drill catalogue.</string>
+    <string name="drill_duration_format">%1$d:%2$02d</string>
+
+    <!-- Live session -->
+    <string name="action_start_drill">Start drill</string>
+    <string name="action_finish_drill">Finish drill</string>
+    <string name="hud_timer_zero">0:00</string>
+    <string name="hud_timer_format">%1$d:%2$02d</string>
+    <string name="hud_shots_zero">Shots: 0/0</string>
+    <string name="hud_shots_format">Shots: %1$d/%2$d</string>
+    <string name="hud_dribbles_zero">Dribbles: 0</string>
+    <string name="hud_dribbles_format">Dribbles: %1$d</string>
+    <string name="error_camera_permission">Camera permission is required to record a drill session.</string>
+    <string name="models_missing_warning">Detection models are not installed — metrics will not be tracked. Run ml-tools/fetch_models.sh and rebuild.</string>
+
+    <!-- Session summary -->
+    <string name="summary_title">Session complete</string>
+    <string name="summary_accuracy_caption">Shooting accuracy</string>
+    <string name="summary_shots_format">Shots made: %1$d of %2$d</string>
+    <string name="summary_release_format">Average release time: %1$d ms</string>
+    <string name="summary_dribbles_format">Dribbles: %1$d (%2$.1f per second)</string>
+    <string name="summary_reaction_format">Average reaction time: %1$d ms</string>
+    <string name="summary_not_measured">Not measured in this drill</string>
+    <string name="action_done">Done</string>
+    <string name="chart_made">Made</string>
+    <string name="chart_missed">Missed</string>
+
+    <!-- Coach dashboard -->
+    <string name="create_team_prompt">Create your team to get a join code you can share with your players.</string>
+    <string name="hint_team_name">Team name</string>
+    <string name="action_create_team">Create team</string>
+    <string name="join_code_caption">Team join code — share with your players</string>
+    <string name="roster_title">Players</string>
+    <string name="roster_empty">No players have joined yet. Share the join code above.</string>
+    <string name="dashboard_trend_title">Accuracy trend — %1$s</string>
+    <string name="trend_empty">No recorded sessions yet for this player.</string>
+    <string name="chart_accuracy_label">Shooting accuracy %</string>
+
+    <!-- Player progress -->
+    <string name="progress_title">My progress</string>
+    <string name="progress_empty">No sessions recorded yet. Complete a drill to start tracking your progress.</string>
+    <string name="session_stats_format">%1$d/%2$d shots · %3$d%% accuracy</string>
+    <string name="delete_session_title">Delete this session?</string>
+    <string name="delete_session_message">This permanently removes the session and its metrics from your record.</string>
+    <string name="action_delete">Delete</string>
+
+    <string name="placeholder_phase6">Coming soon — this screen is built in the frontend phase.</string>
+    <string name="error_google_not_configured">Google Sign-In is not configured for this build (missing Firebase configuration).</string>
+    <string name="error_google_sign_in">Google sign-in failed</string>
+</resources>

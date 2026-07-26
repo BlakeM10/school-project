@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 DayNight base, per the proposal's Material Design requirement -->
+    <style name="Theme.CourtVision" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/court_orange</item>
+        <item name="colorSecondary">@color/court_navy</item>
+    </style>
+</resources>
