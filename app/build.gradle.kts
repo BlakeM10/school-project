@@ -67,6 +67,9 @@ dependencies {
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)
     implementation(libs.camerax.view)
+    // CameraX exposes ListenableFuture in its API but only ships a stub;
+    // real Guava is required on the compile classpath.
+    implementation(libs.guava)
     implementation(libs.mpandroidchart)
 
     testImplementation(libs.junit)
