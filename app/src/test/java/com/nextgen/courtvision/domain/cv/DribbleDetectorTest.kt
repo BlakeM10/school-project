@@ -31,11 +31,11 @@ class DribbleDetectorTest {
         var ts = startTs
         repeat(cycles) {
             for (y in listOf(0.70f, 0.78f, 0.86f, 0.94f)) { // falling
-                detector.onFrame(pose(ts), ball(ts, y), ts)
+                detector.onFrame(pose(ts), ball(ts, y))
                 ts += periodMs / 8
             }
             for (y in listOf(0.86f, 0.78f, 0.70f, 0.62f)) { // rising
-                detector.onFrame(pose(ts), ball(ts, y), ts)
+                detector.onFrame(pose(ts), ball(ts, y))
                 ts += periodMs / 8
             }
         }
@@ -59,7 +59,7 @@ class DribbleDetectorTest {
     fun `ball above the hips is not a dribble`() {
         var ts = 0L
         for (y in listOf(0.30f, 0.38f, 0.46f, 0.38f, 0.30f, 0.38f, 0.46f, 0.38f)) {
-            detector.onFrame(pose(ts), ball(ts, y), ts)
+            detector.onFrame(pose(ts), ball(ts, y))
             ts += 60
         }
         assertTrue(intervals.isEmpty())
@@ -69,7 +69,7 @@ class DribbleDetectorTest {
     fun `tiny jitter below amplitude threshold is ignored`() {
         var ts = 0L
         for (y in listOf(0.80f, 0.81f, 0.80f, 0.81f, 0.80f, 0.81f, 0.80f)) {
-            detector.onFrame(pose(ts), ball(ts, y), ts)
+            detector.onFrame(pose(ts), ball(ts, y))
             ts += 60
         }
         assertTrue(intervals.isEmpty())
@@ -88,7 +88,7 @@ class DribbleDetectorTest {
     fun `without pose frames nothing is counted`() {
         var ts = 0L
         for (y in listOf(0.70f, 0.80f, 0.90f, 0.80f, 0.70f)) {
-            detector.onFrame(null, ball(ts, y), ts)
+            detector.onFrame(null, ball(ts, y))
             ts += 60
         }
         assertTrue(intervals.isEmpty())
