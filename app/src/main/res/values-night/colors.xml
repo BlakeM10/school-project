@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark-mode overrides for colors referenced from code -->
+    <color name="court_orange">#FFB077</color>
+    <color name="court_navy">#BDC5FF</color>
+
+    <!-- Material 3 dark palette -->
+    <color name="cv_primary">#FFB68B</color>
+    <color name="cv_on_primary">#542100</color>
+    <color name="cv_primary_container">#773200</color>
+    <color name="cv_on_primary_container">#FFDBC8</color>
+    <color name="cv_secondary">#BBC3FF</color>
+    <color name="cv_on_secondary">#20295E</color>
+    <color name="cv_secondary_container">#202A76</color>
+    <color name="cv_on_secondary_container">#DEE0FF</color>
+    <color name="cv_background">#1A120D</color>
+    <color name="cv_on_background">#F0DFD6</color>
+    <color name="cv_surface">#1A120D</color>
+    <color name="cv_on_surface">#F0DFD6</color>
+    <color name="cv_surface_variant">#52443C</color>
+    <color name="cv_on_surface_variant">#D7C2B7</color>
+    <color name="cv_outline">#A08D83</color>
+    <color name="cv_error">#FFB4AB</color>
+    <color name="cv_on_error">#690005</color>
+</resources>

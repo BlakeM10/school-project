@@ -3,65 +3,98 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
+    android:paddingTop="20dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        <TextView
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/screen_drill_library"
-            android:textAppearance="?attr/textAppearanceHeadlineSmall" />
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/screen_drill_library"
+                android:textAppearance="@style/TextAppearance.CourtVision.ScreenTitle" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/drill_library_subtitle"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonProgress"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="@string/action_my_progress" />
+            android:minHeight="44dp"
+            android:text="@string/action_my_progress"
+            android:textSize="12sp"
+            app:icon="@drawable/ic_trend"
+            app:iconSize="16dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonSignOut"
             style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:minHeight="48dp"
-            android:text="@string/action_sign_out" />
+            android:layout_marginStart="4dp"
+            android:minHeight="44dp"
+            android:text="@string/action_sign_out"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/teamBanner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="14dp"
         android:visibility="gone"
-        app:cardBackgroundColor="?attr/colorSecondaryContainer">
+        app:cardBackgroundColor="?attr/colorSecondaryContainer"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="0dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="18dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="@string/team_banner_title"
+                android:textAppearance="@style/TextAppearance.CourtVision.SectionTitle"
+                android:textColor="?attr/colorOnSecondaryContainer" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
                 android:text="@string/team_banner_text"
-                android:textAppearance="?attr/textAppearanceBodyMedium" />
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorOnSecondaryContainer" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonJoinTeam"
+                style="@style/Widget.CourtVision.Button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:minHeight="48dp"
+                android:layout_marginTop="12dp"
+                android:minHeight="46dp"
                 android:text="@string/action_join_team" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -79,17 +112,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
         android:text="@string/drills_empty"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drillList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_marginTop="10dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="20dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 </LinearLayout>

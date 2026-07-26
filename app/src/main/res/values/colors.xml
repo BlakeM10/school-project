@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Brand anchors (referenced from code: charts, radial view) -->
     <color name="court_orange">#E65100</color>
     <color name="court_navy">#1A237E</color>
+
+    <!-- Material 3 light palette — warm court-inspired neutrals -->
+    <color name="cv_primary">#B34700</color>
+    <color name="cv_on_primary">#FFFFFF</color>
+    <color name="cv_primary_container">#FFDBC8</color>
+    <color name="cv_on_primary_container">#331200</color>
+    <color name="cv_secondary">#39448F</color>
+    <color name="cv_on_secondary">#FFFFFF</color>
+    <color name="cv_secondary_container">#DEE0FF</color>
+    <color name="cv_on_secondary_container">#0B1666</color>
+    <color name="cv_background">#FFF8F5</color>
+    <color name="cv_on_background">#221A15</color>
+    <color name="cv_surface">#FFF8F5</color>
+    <color name="cv_on_surface">#221A15</color>
+    <color name="cv_surface_variant">#F4DED3</color>
+    <color name="cv_on_surface_variant">#52443C</color>
+    <color name="cv_outline">#85736A</color>
+    <color name="cv_error">#BA1A1A</color>
+    <color name="cv_on_error">#FFFFFF</color>
+
+    <color name="ic_launcher_background">#E65100</color>
 </resources>

@@ -11,6 +11,13 @@
     <string name="screen_coach_dashboard">Coach Dashboard</string>
 
     <string name="login_subtitle">NextGen Basketball Foundation</string>
+    <string name="login_welcome">Welcome back</string>
+    <string name="register_subtitle">Track your game. See your progress.</string>
+    <string name="drill_library_subtitle">Pick a drill to start training</string>
+    <string name="team_banner_title">Join your team</string>
+    <string name="create_team_title">Set up your team</string>
+    <string name="summary_metrics_title">Session metrics</string>
+    <string name="progress_subtitle">Your shooting accuracy over time</string>
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
     <string name="hint_name">Full name</string>
