@@ -1,4 +1,4 @@
-package com.nextgen.courtvision.ui.dashboard
+package com.nextgen.courtvision.ui.progress
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -16,82 +15,56 @@ import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.nextgen.courtvision.CourtVisionApp
 import com.nextgen.courtvision.R
-import com.nextgen.courtvision.databinding.FragmentCoachDashboardBinding
+import com.nextgen.courtvision.databinding.FragmentPlayerProgressBinding
 import com.nextgen.courtvision.domain.model.Session
-import com.nextgen.courtvision.viewmodel.AuthViewModel
-import com.nextgen.courtvision.viewmodel.CoachDashboardViewModel
+import com.nextgen.courtvision.viewmodel.PlayerProgressViewModel
 import kotlinx.coroutines.launch
 
-/**
- * Coach home screen: team creation with a shareable join code, live player
- * roster, and the longitudinal accuracy trend chart for the selected player.
- */
-class CoachDashboardFragment : Fragment() {
+/** Player-facing longitudinal progress report: accuracy trend + session history. */
+class PlayerProgressFragment : Fragment() {
 
-    private var _binding: FragmentCoachDashboardBinding? = null
+    private var _binding: FragmentPlayerProgressBinding? = null
     private val binding get() = _binding!!
 
     private val container get() = (requireActivity().application as CourtVisionApp).container
 
-    private val authViewModel: AuthViewModel by activityViewModels {
-        AuthViewModel.Factory(container.authRepository)
+    private val viewModel: PlayerProgressViewModel by viewModels {
+        PlayerProgressViewModel.Factory(container.authRepository, container.firestoreRepository)
     }
 
-    private val viewModel: CoachDashboardViewModel by viewModels {
-        CoachDashboardViewModel.Factory(container.authRepository, container.firestoreRepository)
-    }
-
-    private lateinit var playerAdapter: PlayerAdapter
+    private lateinit var historyAdapter: SessionHistoryAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        _binding = FragmentCoachDashboardBinding.inflate(inflater, container, false)
+        _binding = FragmentPlayerProgressBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        playerAdapter = PlayerAdapter { viewModel.selectPlayer(it) }
-        binding.playerList.adapter = playerAdapter
-
-        binding.buttonCreateTeam.setOnClickListener {
-            viewModel.createTeam(binding.inputTeamName.text?.toString().orEmpty())
-        }
-        binding.buttonSignOut.setOnClickListener { authViewModel.signOut() }
+        historyAdapter = SessionHistoryAdapter(
+            drillNameFor = { drillId ->
+                viewModel.uiState.value.drillsById[drillId]?.name ?: drillId
+            },
+            onDeleteClicked = { session -> confirmDelete(session) },
+        )
+        binding.historyList.adapter = historyAdapter
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    binding.progress.isVisible = state.loading || state.creatingTeam
-                    binding.createTeamGroup.isVisible = state.needsTeam && !state.loading
-                    binding.dashboardGroup.isVisible = state.team != null
-
-                    state.team?.let { team ->
-                        binding.teamName.text = team.name
-                        binding.joinCode.text = team.joinCode
-                    }
-
-                    playerAdapter.submitList(
-                        state.players.map {
-                            PlayerAdapter.Row(it, it.uid == state.selectedPlayer?.uid)
-                        },
-                    )
-                    binding.emptyRoster.isVisible =
-                        state.team != null && state.players.isEmpty()
-
-                    binding.selectedPlayerName.isVisible = state.selectedPlayer != null
-                    binding.selectedPlayerName.text = state.selectedPlayer?.let {
-                        getString(R.string.dashboard_trend_title, it.displayName)
-                    }
-                    renderTrendChart(state.selectedPlayerSessions)
-
+                    binding.progress.isVisible = state.loading
+                    binding.emptyState.isVisible = !state.loading && state.sessions.isEmpty()
+                    historyAdapter.submitList(state.sessions)
+                    renderTrendChart(state.sessions)
                     state.error?.let {
                         Snackbar.make(binding.root, it, Snackbar.LENGTH_LONG).show()
                         viewModel.acknowledgeError()
@@ -101,11 +74,22 @@ class CoachDashboardFragment : Fragment() {
         }
     }
 
+    private fun confirmDelete(session: Session) {
+        // Deletion is the player's legal right (right to erasure) but must not
+        // happen from an accidental tap on an analytics record.
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.delete_session_title)
+            .setMessage(R.string.delete_session_message)
+            .setPositiveButton(R.string.action_delete) { _, _ ->
+                viewModel.deleteSession(session.id)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun renderTrendChart(sessions: List<Session>) {
-        // observeSessions returns newest-first; the trend chart reads oldest → newest.
         val chronological = sessions.sortedBy { it.startedAtMillis }
         binding.trendChart.isVisible = chronological.isNotEmpty()
-        binding.emptyTrend.isVisible = chronological.isEmpty()
         if (chronological.isEmpty()) return
 
         val entries = chronological.mapIndexed { index, session ->

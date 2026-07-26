@@ -33,6 +33,12 @@ class FirebaseFirestoreRepository(
         ref.id
     }
 
+    override suspend fun getSession(sessionId: String): Result<Session> = runCatching {
+        val doc = firestore.collection(SESSIONS).document(sessionId).get().await()
+        doc.data?.let { SessionMapper.fromDocument(doc.id, it) }
+            ?: error("Session $sessionId not found")
+    }
+
     override suspend fun deleteSession(sessionId: String): Result<Unit> = runCatching {
         firestore.collection(SESSIONS).document(sessionId).delete().await()
     }

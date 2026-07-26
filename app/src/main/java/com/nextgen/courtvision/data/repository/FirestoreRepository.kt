@@ -20,6 +20,7 @@ interface FirestoreRepository {
 
     // Sessions
     suspend fun saveSession(session: Session): Result<String>
+    suspend fun getSession(sessionId: String): Result<Session>
     suspend fun deleteSession(sessionId: String): Result<Unit>
     fun observeSessions(playerId: String): Flow<List<Session>>
     fun observeSessionsForDrill(playerId: String, drillId: String): Flow<List<Session>>

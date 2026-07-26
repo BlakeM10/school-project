@@ -11,6 +11,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // MPAndroidChart (coach dashboard / progress line charts) is published on JitPack
+        maven { url = uri("https://www.jitpack.io") }
     }
 }
 
