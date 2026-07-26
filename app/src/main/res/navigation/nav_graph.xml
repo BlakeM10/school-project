@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.nextgen.courtvision.ui.login.LoginFragment"
+        android:label="@string/screen_login" />
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.nextgen.courtvision.ui.login.RegisterFragment"
+        android:label="@string/screen_register">
+        <argument
+            android:name="completeProfileMode"
+            android:defaultValue="false"
+            app:argType="boolean" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/drillLibraryFragment"
+        android:name="com.nextgen.courtvision.ui.drilllibrary.DrillLibraryFragment"
+        android:label="@string/screen_drill_library" />
+
+    <fragment
+        android:id="@+id/coachDashboardFragment"
+        android:name="com.nextgen.courtvision.ui.dashboard.CoachDashboardFragment"
+        android:label="@string/screen_coach_dashboard" />
+</navigation>

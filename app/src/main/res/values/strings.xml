@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Court Vision</string>
+
+    <string name="screen_login">Sign in</string>
+    <string name="screen_register">Create account</string>
+    <string name="screen_drill_library">Drill Library</string>
+    <string name="screen_coach_dashboard">Coach Dashboard</string>
+
+    <string name="login_subtitle">NextGen Basketball Foundation</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_name">Full name</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_google">Continue with Google</string>
+    <string name="action_register">Create account</string>
+    <string name="action_sign_out">Sign out</string>
+    <string name="link_create_account">New here? Create an account</string>
+
+    <string name="register_title">Create your account</string>
+    <string name="register_role_prompt">I am a…</string>
+    <string name="role_player">Player</string>
+    <string name="role_coach">Coach</string>
+    <string name="register_complete_profile_title">Finish setting up</string>
+    <string name="register_complete_profile_button">Continue</string>
+
+    <string name="placeholder_phase6">Coming soon — this screen is built in the frontend phase.</string>
+    <string name="error_google_not_configured">Google Sign-In is not configured for this build (missing Firebase configuration).</string>
+    <string name="error_google_sign_in">Google sign-in failed</string>
+</resources>

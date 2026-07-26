@@ -1,0 +1,17 @@
+# Gradle
+.gradle/
+build/
+local.properties
+
+# IDE
+.idea/
+*.iml
+.vscode/
+captures/
+
+# Firebase config is per-developer (contains project API keys); each developer
+# downloads their own from the Firebase console. See README setup steps.
+app/google-services.json
+
+# OS
+.DS_Store
